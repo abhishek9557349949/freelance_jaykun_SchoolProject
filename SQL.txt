@@ -1,0 +1,29 @@
+CREATE DATABASE clg_app;
+
+CREATE TABLE session_service (
+    session_id CHAR(36) PRIMARY KEY,
+    user_id CHAR(36),
+    username VARCHAR(120),
+    login_time TIMESTAMP,
+    last_activity_time TIMESTAMP,
+    expiration_time TIMESTAMP,
+    is_active CHAR(1) DEFAULT 'Y',
+    ip_address VARCHAR(255),
+    user_agent VARCHAR(255),
+    device_info VARCHAR(255)
+);
+
+CREATE UNIQUE INDEX idx_username ON session_service(username);
+
+CREATE TABLE user_details (
+    rid INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(120) NOT NULL,
+    first_name VARCHAR(120),
+    last_name VARCHAR(120),
+    middle_name VARCHAR(120),
+    phone_number VARCHAR(15),
+    email VARCHAR(255),
+    password_hashcode VARCHAR(255),
+    role VARCHAR(50),
+    FOREIGN KEY (username) REFERENCES session_service(username)
+);

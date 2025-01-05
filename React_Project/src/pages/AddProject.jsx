@@ -6,9 +6,11 @@ import CustomInput from "../components/CustomInput";
 import CustomRadioGroup from "../components/CustomRadioGroup";
 import CustomSelect from "../components/CustomSelect";
 import { FormLabel } from "@mui/material";
+import { useNavigate } from 'react-router-dom';
 
 const AddProject = () => {
   const [assignedMembers, setAssignedMembers] = useState([]);
+  const navigate = useNavigate();
   const categories = [
     { value: "web-development", label: "Web Development" },
     { value: "mobile-development", label: "Mobile Development" },
@@ -90,14 +92,7 @@ const AddProject = () => {
 
   const initialValues = {
     projectName: "",
-    projectDescription: "",
-    category: "",
-    skills: "",
-    clientName: "",
-    deadline: "",
-    priority: "",
-    selectedMember: "",
-    members: [],
+    projectDescription: ""
   };
 
   const validationSchema = Yup.object({
@@ -145,8 +140,45 @@ const AddProject = () => {
     setAssignedMembers((prev) => prev.filter((m) => m !== member));
   };
 
-  const handleSubmit = (values) => {
-    console.log("Submitted Values:", { ...values, members: assignedMembers });
+  const handleSubmit = async (values) => {
+    const userDetail = JSON.parse(sessionStorage.getItem("loginDetails"));
+    const userName = userDetail?.username;
+
+    const requestData = {
+      project: {
+        projectName: values.projectName,
+        projectDescription: values.projectDescription,
+      },
+      userName: userName, // Include userName in the request body
+    };
+
+    try {
+      const response = await fetch("http://localhost/api/application/addproject", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData), // Send the request in the exact format
+      });
+
+      const result = await response.json();
+
+      // Check for success or error message in the response
+      if (result.successMsg === "Success") {
+        // Success scenario
+        alert("Project Added Successfully"); // You can show this message in any way you prefer
+      } else if (result.errMsg) {
+        // Error scenario
+        alert(result.errMsg); // You can show this message in any way you prefer
+      } else if (result.successMsg === "login") {
+        sessionStorage.removeItem("loginDetails");
+        navigate("/login");
+        return;
+      } 
+    } catch (error) {
+      console.error("Error during submission:", error);
+      alert("An error occurred. Please try again later.");
+    }
   };
 
   return (
@@ -192,7 +224,7 @@ const AddProject = () => {
                   label="Priority"
                   name="priority"
                   onChange={(e) => setFieldValue("priority", e.target.value)}
-                  options={[
+                  options={[  
                     { label: "Platinum", value: "platinum" },
                     { label: "Gold", value: "gold" },
                     { label: "Silver", value: "silver" },
@@ -260,12 +292,12 @@ const AddProject = () => {
                 </div>
               </div>
 
-              <div className="flex justify-end">
+              <div className="mt-4">
                 <button
                   type="submit"
-                  className="bg-teal-700 text-white px-6 py-2 rounded-md"
+                  className="w-full py-2 px-4 bg-teal-700 text-white rounded-md"
                 >
-                  Create Project
+                  Add Project
                 </button>
               </div>
             </Form>

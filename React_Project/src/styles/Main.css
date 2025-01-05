@@ -1,0 +1,43 @@
+/* Main layout */
+.main-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* Full viewport height */
+}
+
+/* Layout container wraps sidebar and content */
+.layout-container {
+  display: flex;
+  flex: 1;
+  height: calc(100vh - 64px); /* Header height subtracted */
+  overflow: hidden; /* Prevent overflow */
+} 
+
+/* Sidebar */
+.sidebar {
+  width: 240px;
+  height: calc(100vh - 64px); /* Header height subtracted */
+  position: fixed; /* Ensure it's always visible */
+  top: 64px; /* Offset by header height */
+  background-color: #00796b; /* Primary color */
+  overflow-y: auto; /* Scrollable sidebar content */
+  z-index: 1000;
+}
+
+/* Content Wrapper */
+.content-wrapper {
+  margin-left: 240px; /* Offset to account for sidebar width */
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto; /* Allow scrolling for content */
+  background-color: #f5f5f5; /* Neutral background for content */
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 10px;
+  background-color: #f5f5f5;
+  font-size: 14px;
+  color: #666;
+}

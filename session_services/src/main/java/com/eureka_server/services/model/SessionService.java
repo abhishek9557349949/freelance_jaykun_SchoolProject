@@ -23,6 +23,9 @@ public class SessionService {
 
 	    @Column(name = "username")
 	    private String username;
+	    
+	    @Column(name = "password")
+	    private String password;
 
 	    @Column(name = "login_time")
 	    private Timestamp loginTime;
@@ -34,7 +37,7 @@ public class SessionService {
 	    private Timestamp expirationTime;
 
 	    @Column(name = "is_active")
-	    private boolean isActive;
+	    private String isActive;
 
 	    @Column(name = "ip_address")
 	    private String ipAddress;
@@ -94,11 +97,11 @@ public class SessionService {
 	        this.expirationTime = expirationTime;
 	    }
 
-	    public boolean isActive() {
+	    public String isActive() {
 	        return isActive;
 	    }
 
-	    public void setActive(boolean active) {
+	    public void setActive(String active) {
 	        isActive = active;
 	    }
 
@@ -125,4 +128,13 @@ public class SessionService {
 	    public void setDeviceInfo(String deviceInfo) {
 	        this.deviceInfo = deviceInfo;
 	    }
+
+		public String getPassword() {
+			return password;
+		}
+
+		public void setPassword(String password) {
+			this.password = password;
+		}
+	    
 }

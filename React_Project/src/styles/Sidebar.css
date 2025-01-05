@@ -1,0 +1,29 @@
+.sidebar {
+  position: fixed; /* Fix it to the side */
+  top: 0;
+  left: 0;
+  width: 240px; /* Adjust as needed */
+  height: 100vh; /* Full viewport height */
+  background-color: #004d40; /* Example background color */
+  color: #ffffff; /* Text color */
+  overflow-y: auto; /* Enable vertical scrolling if needed */
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-item {
+  margin-bottom: 20px;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.sidebar-item:hover {
+  background-color: #00695c;
+  border-radius: 4px;
+  padding: 8px;
+}

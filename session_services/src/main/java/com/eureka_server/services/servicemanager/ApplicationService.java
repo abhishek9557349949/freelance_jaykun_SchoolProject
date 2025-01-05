@@ -11,6 +11,7 @@ import com.eureka_server.services.model.AddProjectREsponse;
 import com.eureka_server.services.model.AllProjectData;
 import com.eureka_server.services.model.GetProjectDataREsponse;
 import com.eureka_server.services.model.ProjectData;
+import com.eureka_server.services.model.ProjectListResponse;
 import com.eureka_server.services.model.Projects;
 import com.eureka_server.services.model.SessionService;
 import com.eureka_server.services.model.TimeDescription;
@@ -122,5 +123,33 @@ public class ApplicationService {
 			getProjectDataREsponse.setErrmsg("Db is not Responding");
 		}
 		return getProjectDataREsponse;
+	}
+
+	public ProjectListResponse getProjectList(AddProjectREsponse project) {
+		SessionService sessionService = new SessionService();
+		ProjectListResponse projectListResponse = new ProjectListResponse();
+		try {
+			long currentTimeMillis = System.currentTimeMillis();
+	        Timestamp timestamp = new Timestamp(currentTimeMillis);
+	        Calendar calendar = Calendar.getInstance();
+	        calendar.setTime(timestamp);
+	        calendar.add(Calendar.MINUTE, 10);
+	        Timestamp expitationTimestamp = new Timestamp(calendar.getTimeInMillis());
+			sessionService = sessionServiceRepository.findByUsername(project.getUserName());
+			if(sessionService != null && "Y".equalsIgnoreCase(sessionService.isActive())) {
+				sessionService.setLastActivityTime(timestamp);
+				sessionService.setExpirationTime(expitationTimestamp);
+				sessionServiceRepository.save(sessionService);
+				
+				List<Projects> projects = projectsReopsitory.findAll();
+				projectListResponse.setProjects(projects);
+				projectListResponse.setSuccessMsg("Success");
+			}else {
+				projectListResponse.setSuccessMsg("login");;
+			}
+		} catch (Exception e) {
+			projectListResponse.setErrorMsg("Db is not Responding");
+		}
+		return projectListResponse;
 	}
 }

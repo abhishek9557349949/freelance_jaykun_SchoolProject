@@ -1,28 +1,47 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Formik, Form } from "formik";
 import { Button } from "@mui/material";
-import { loginValidationSchema } from "../../validation";
 import CustomInput from "../../components/CustomInput";
 import { useNavigate } from "react-router-dom";
-import { LoginApis } from "../../services/api/auth";
+import axios from "axios";
 
 const Login = ({ toggleForm }) => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  // Check if userDetails are already in session storage on component mount
+  useEffect(() => {
+    const userDetails = sessionStorage.getItem("loginDetails");
+    if (userDetails && userDetails != null) {
+      navigate("/dashboard"); // Redirect to dashboard if userDetails are found
+    }else{
+      navigate("/login");
+    }
+  }, [navigate]);
+
   const handleLogin = async (values) => {
     console.log("Form submitted:", values);
-    navigate("/dashboard");
     try {
-      const { data } = await LoginApis.loginUser(values);
-      if (data) {
-        navigate("/dashboard");
+      const response = await axios.post("http://localhost:8081/api/login", values);
+      const data = response.data;
+
+      if (data && data.responseMsg === "Success") {
+        if (data.userDetails) {
+          sessionStorage.setItem("loginDetails", JSON.stringify(data.userDetails));
+          navigate("/dashboard");
+        }
+      } else if (data.errorMsg) {
+        alert(data.errorMsg);
+        setError(data.errorMsg);
       } else {
-        setError(data.message);
+        setError(data.responseMsg);
       }
     } catch (error) {
       console.error("Login error:", error);
-      setError(error.response.data.message);
+      const errorMessage =
+        error.response?.data?.message || "An error occurred. Please try again.";
+      alert(errorMessage); // Display error message in alert box
+      setError(errorMessage);
     }
   };
 
@@ -33,10 +52,9 @@ const Login = ({ toggleForm }) => {
 
       <Formik
         initialValues={{
-          email: "",
+          username: "",
           password: "",
         }}
-        validationSchema={loginValidationSchema}
         onSubmit={handleLogin}
       >
         <Form>
@@ -46,10 +64,10 @@ const Login = ({ toggleForm }) => {
             </div>
           )}
           <CustomInput
-            name="email"
-            label="Enter Mail"
-            type="email"
-            placeholder="Enter Mail"
+            name="username"
+            label="Enter UserId"
+            type="text"
+            placeholder="Enter User Id"
           />
           <CustomInput
             name="password"

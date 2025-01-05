@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.eureka_server.services.model.AddProjectREsponse;
 import com.eureka_server.services.model.GetProjectDataREsponse;
+import com.eureka_server.services.model.ProjectListResponse;
 import com.eureka_server.services.servicemanager.ApplicationService;
 
 @RestController
@@ -31,5 +32,12 @@ public class ApplicationController {
 		GetProjectDataREsponse getProjectDataREsponse = new GetProjectDataREsponse();
 		getProjectDataREsponse = applicationService.getProjectData(project);
 		return getProjectDataREsponse;
+	}
+	
+	@PostMapping("/getprojectlist")
+	public ProjectListResponse getProjectList(@RequestBody AddProjectREsponse project) {
+		ProjectListResponse addProjectREsponse = new ProjectListResponse();
+		addProjectREsponse = applicationService.getProjectList(project);
+		return addProjectREsponse;
 	}
 }

@@ -1,31 +1,22 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Main from "../components/Main";
 import { Bar } from "react-chartjs-2";
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js";
 import { Card, Typography } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const Dashboard = () => {
-  const projectData = {
-    hours: {
-      labels: ["Project A", "Project B", "Project C", "Project D"],
-      data: [24, 18, 32, 12],
-    },
-    activities: {
-      labels: ["Project A", "Project B", "Project C", "Project D"],
-      data: [15, 8, 20, 10],
-    },
-    timeBreakdown1: {
-      labels: ["Planning", "Development", "Testing", "Deployment"],
-      data: [10, 25, 15, 8],
-    },
-    timeBreakdown2: {
-      labels: ["Meetings", "Coding", "Review", "Documentation"],
-      data: [12, 28, 16, 10],
-    },
-  };
+  const [projectData, setProjectData] = useState({
+    hours: { labels: [], data: [] },
+    activities: { labels: [], data: [] },
+    timeBreakdown1: { labels: [], data: [] },
+    timeBreakdown2: { labels: [], data: [] },
+  });
+  const navigate = useNavigate();
 
   const chartConfig = {
     responsive: true,
@@ -59,6 +50,40 @@ const Dashboard = () => {
       },
     ],
   });
+
+  useEffect(() => {
+    const fetchProjectData = async () => {
+      const userDetail = JSON.parse(sessionStorage.getItem("loginDetails"));
+      const userName = userDetail?.username;
+
+      if (!userDetail) {
+        sessionStorage.removeItem("loginDetails");
+        navigate("/login");
+        return;
+      }
+
+      try {
+        const response = await axios.post("http://localhost:8081/api/application/getprojectdata", {
+          userName,
+        });
+
+        console.log("API Response:", response.data); // Log the API response
+
+        const data = response.data;
+
+        if (data.successmsg === "login") {
+          sessionStorage.removeItem("loginDetails");
+          navigate("/login");
+        } else {
+          setProjectData(data.allProjectData); // Set the project data
+        }
+      } catch (error) {
+        console.error("Error fetching project data:", error);
+      }
+    };
+
+    fetchProjectData();
+  }, [navigate]);
 
   return (
     <Main>

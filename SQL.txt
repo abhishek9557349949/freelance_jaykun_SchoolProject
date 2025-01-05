@@ -1,19 +1,19 @@
-CREATE DATABASE clg_app;
+CREATE DATABASE clgg_app;
 
 CREATE TABLE session_service (
-    session_id CHAR(36) PRIMARY KEY,
-    user_id CHAR(36),
+    session_id CHAR(255) PRIMARY KEY,
+    user_id CHAR(255),
     username VARCHAR(120),
+    name VARCHAR(120),
+    password VARCHAR(120),
     login_time TIMESTAMP,
     last_activity_time TIMESTAMP,
     expiration_time TIMESTAMP,
-    is_active CHAR(1) DEFAULT 'Y',
+    is_active VARCHAR(10) DEFAULT 'Y',
     ip_address VARCHAR(255),
     user_agent VARCHAR(255),
     device_info VARCHAR(255)
 );
-
-CREATE UNIQUE INDEX idx_username ON session_service(username);
 
 CREATE TABLE user_details (
     rid INT AUTO_INCREMENT PRIMARY KEY,
@@ -24,6 +24,146 @@ CREATE TABLE user_details (
     phone_number VARCHAR(15),
     email VARCHAR(255),
     password_hashcode VARCHAR(255),
-    role VARCHAR(50),
-    FOREIGN KEY (username) REFERENCES session_service(username)
+    role VARCHAR(50)
 );
+
+
+-- Insert sample data into user_details
+INSERT INTO user_details (
+    username, 
+    first_name, 
+    last_name, 
+    middle_name, 
+    phone_number, 
+    email, 
+    password_hashcode, 
+    role
+) 
+VALUES 
+-- Row 1
+('john_doe', 'John', 'Doe', NULL, '9876543210', 'john.doe@example.com', 'e99a18c428cb38d5f260853678922e03', 'ADMIN'),
+-- Row 2
+('jane_smith', 'Jane', 'Smith', NULL, '8765432109', 'jane.smith@example.com', 'd8578edf8458ce06fbc5bb76a58c5ca4', 'USER'),
+-- Row 3
+('michael_b', 'Michael', 'Brown', 'T', '7654321098', 'michael.b@example.com', '5f4dcc3b5aa765d61d8327deb882cf99', 'USER'),
+-- Row 4
+('linda_k', 'Linda', 'Kim', NULL, '6543210987', 'linda.k@example.com', '25d55ad283aa400af464c76d713c07ad', 'MANAGER'),
+-- Row 5
+('robert_j', 'Robert', 'Jones', 'A', '5432109876', 'robert.j@example.com', '098f6bcd4621d373cade4e832627b4f6', 'SUPERVISOR');
+
+
+INSERT INTO session_service (
+    session_id, 
+    user_id, 
+    username, 
+    name, 
+    password, 
+    login_time, 
+    last_activity_time, 
+    expiration_time, 
+    is_active, 
+    ip_address, 
+    user_agent, 
+    device_info
+) VALUES 
+(
+    'sess_001', 
+    'user_001', 
+    'john_doe', 
+    'John Doe', 
+    'password123', 
+    CURRENT_TIMESTAMP, 
+    CURRENT_TIMESTAMP, 
+    CURRENT_TIMESTAMP + INTERVAL '1' DAY, 
+    'Y', 
+    '192.168.1.1', 
+    'Mozilla/5.0 (Windows NT 10.0)', 
+    'Windows 10 PC'
+),
+(
+    'sess_002', 
+    'user_002', 
+    'jane_smith', 
+    'Jane Smith', 
+    'securePass456', 
+    CURRENT_TIMESTAMP, 
+    CURRENT_TIMESTAMP, 
+    CURRENT_TIMESTAMP + INTERVAL '1' DAY, 
+    'Y', 
+    '192.168.1.2', 
+    'Mozilla/5.0 (Macintosh)', 
+    'MacBook Air'
+),
+(
+    'sess_003', 
+    'user_003', 
+    'michael_b', 
+    'Michael Brown', 
+    'mikePwd789', 
+    CURRENT_TIMESTAMP, 
+    CURRENT_TIMESTAMP, 
+    CURRENT_TIMESTAMP + INTERVAL '1' DAY, 
+    'Y', 
+    '192.168.1.3', 
+    'Mozilla/5.0 (Linux)', 
+    'Ubuntu Laptop'
+),
+(
+    'sess_004', 
+    'user_004', 
+    'linda_k', 
+    'Linda King', 
+    'lindaPass123', 
+    CURRENT_TIMESTAMP, 
+    CURRENT_TIMESTAMP, 
+    CURRENT_TIMESTAMP + INTERVAL '1' DAY, 
+    'Y', 
+    '192.168.1.4', 
+    'Mozilla/5.0 (Android)', 
+    'Samsung Galaxy S22'
+),
+(
+    'sess_005', 
+    'user_005', 
+    'robert_j', 
+    'Robert Johnson', 
+    'robertPass456', 
+    CURRENT_TIMESTAMP, 
+    CURRENT_TIMESTAMP, 
+    CURRENT_TIMESTAMP + INTERVAL '1' DAY, 
+    'Y', 
+    '192.168.1.5', 
+    'Mozilla/5.0 (iPhone)', 
+    'iPhone 14 Pro'
+);
+
+CREATE TABLE projects (
+    project_id INT AUTO_INCREMENT PRIMARY KEY,
+    project_name VARCHAR(255) NOT NULL,
+    project_description TEXT NOT NULL,
+    total_time INT NOT NULL
+);
+
+INSERT INTO projects (project_name, project_description, total_time) 
+VALUES 
+('Inventory Management System', 'A system to manage inventory for small businesses', 120),
+('E-commerce Website', 'An online platform for selling and buying products', 200),
+('School Management System', 'A software solution to manage school operations', 150),
+('Social Media App', 'A platform for users to connect and share content', 180);
+
+CREATE TABLE time_descriptions (
+    description_id INT AUTO_INCREMENT PRIMARY KEY,
+    time_description VARCHAR(255) NOT NULL,
+    total_time INT NOT NULL
+);
+
+INSERT INTO time_descriptions (time_description, total_time) 
+VALUES 
+('Planning', 10),
+('Development', 60),
+('Testing', 30),
+('Deployment', 20),
+('Meeting', 15),
+('Coding', 40),
+('Review', 25),
+('Documentation', 20);

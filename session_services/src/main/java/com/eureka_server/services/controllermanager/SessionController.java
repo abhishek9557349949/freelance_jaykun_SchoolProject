@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.eureka_server.services.model.LoginRequest;
 import com.eureka_server.services.model.LoginResponse;
+import com.eureka_server.services.model.SignupResponse;
 import com.eureka_server.services.model.UserDetails;
 import com.eureka_server.services.servicemanager.SessionServices;
 
@@ -49,6 +50,17 @@ public class SessionController {
     		logoutResponse.setErrorMsg("Something Went Wrong, Please Try Again.");
     	}
     	return logoutResponse;
+    }
+    
+    @PostMapping("/signup")
+    public SignupResponse signup(@RequestBody UserDetails userDetails) {
+    	SignupResponse signupResponse = new SignupResponse();
+    	try {
+    		signupResponse  = sessionServices.signUpAttempt(userDetails);
+    	}catch(Exception e) {
+    		signupResponse.setErrorMsg("Something Went Wrong, Please Try Again.");
+    	}
+    	return signupResponse;
     }
     
     @Scheduled(fixedRate = 60000)

@@ -140,10 +140,10 @@ const AddProject = () => {
     setAssignedMembers((prev) => prev.filter((m) => m !== member));
   };
 
-  const handleSubmit = async (values) => {
+  const handleSubmit = async (values, { resetForm }) => {
     const userDetail = JSON.parse(sessionStorage.getItem("loginDetails"));
     const userName = userDetail?.username;
-
+  
     const requestData = {
       project: {
         projectName: values.projectName,
@@ -151,35 +151,38 @@ const AddProject = () => {
       },
       userName: userName, // Include userName in the request body
     };
-
+  
     try {
-      const response = await fetch("http://localhost/api/application/addproject", {
+      const response = await fetch("http://localhost:8081/api/application/addproject", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(requestData), // Send the request in the exact format
       });
-
+  
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+  
       const result = await response.json();
-
+  
       // Check for success or error message in the response
       if (result.successMsg === "Success") {
-        // Success scenario
-        alert("Project Added Successfully"); // You can show this message in any way you prefer
+        resetForm();
+        alert("Project Added Successfully"); // Success scenario
       } else if (result.errMsg) {
-        // Error scenario
-        alert(result.errMsg); // You can show this message in any way you prefer
+        alert(result.errMsg); // Error scenario
       } else if (result.successMsg === "login") {
         sessionStorage.removeItem("loginDetails");
         navigate("/login");
-        return;
-      } 
+      }
     } catch (error) {
       console.error("Error during submission:", error);
       alert("An error occurred. Please try again later.");
     }
   };
+  
 
   return (
     <Main>
@@ -189,7 +192,6 @@ const AddProject = () => {
         </h2>
         <Formik
           initialValues={initialValues}
-          validationSchema={validationSchema}
           onSubmit={handleSubmit}
           enableReinitialize
         >

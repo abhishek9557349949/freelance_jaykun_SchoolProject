@@ -5,26 +5,39 @@ import CustomInput from "../../components/CustomInput";
 import { signupValidationSchema } from "../../validation";
 import { useNavigate } from "react-router-dom";
 import CustomRadioGroup from "../../components/CustomRadioGroup";
-import { LoginApis } from "../../services/api/auth";
+import axios from "axios"; // Axios for API calls
 
 const Signup = ({ toggleForm }) => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleSignup = (values) => {
-    console.log("Signed up successfully!", values);
+  const handleSignup = async (values) => {
     try {
-      const { data } = LoginApis.registerUser(values);
-      if (data) {
-        navigate("/login");
-      } else {
-        setError(data.message);
+      const response = await axios.post("http://localhost:8081/api/signup", {
+        username: values.username,
+        firstName: values.firstName,
+        lastName: values.lastName,
+        middleName: null, // Optional field
+        phoneNumber: values.mobile,
+        email: values.email,
+        passwordHashcode: values.password, // Assuming the backend hashes the password
+        role: "ADMIN", // Default role (customize as needed)
+      });
+
+      const { successMsg, errorMsg } = response.data;
+
+      if (successMsg) {
+        alert(successMsg); // Display success message
+        navigate("/login"); // Redirect to login page
+      } else if (errorMsg) {
+        setError(errorMsg);
+        alert(errorMsg); // Display error message
       }
-    } catch (error) {
-      console.error("Signup error:", error);
-      setError(error.response.data.message);
+    } catch (err) {
+      const errorMsg = err.response?.data?.errorMsg || "Something went wrong!";
+      setError(errorMsg);
+      alert(errorMsg); // Show error in an alert box
     }
-    // navigate("/login");
   };
 
   return (
@@ -36,23 +49,25 @@ const Signup = ({ toggleForm }) => {
         initialValues={{
           firstName: "",
           lastName: "",
+          username: "",
           email: "",
           mobile: "",
           gender: "",
           password: "",
-          confirmPassword: "", // Added for re-enter password
+          confirmPassword: "", // Re-enter password field
         }}
         validationSchema={signupValidationSchema}
         onSubmit={handleSignup}
       >
         {({ values, handleChange }) => (
           <Form>
-            {/* First Name and Last Name */}
             {error && (
               <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-1 rounded">
                 <span className="text-red-500 font-bold">{error}</span>
               </div>
             )}
+
+            {/* First Name and Last Name */}
             <div className="flex gap-4">
               <CustomInput
                 name="firstName"
@@ -65,6 +80,14 @@ const Signup = ({ toggleForm }) => {
                 placeholder="Enter Last Name"
               />
             </div>
+
+            {/* Username */}
+            <CustomInput
+              name="username"
+              label="User ID"
+              type="text"
+              placeholder="Enter User ID"
+            />
 
             {/* Email */}
             <CustomInput
@@ -132,7 +155,7 @@ const Signup = ({ toggleForm }) => {
         )}
       </Formik>
 
-      <p className="form-footer">Already have an account? </p>
+      <p className="form-footer">Already have an account?</p>
       <button className="toggle-btn" onClick={toggleForm}>
         ← Login
       </button>

@@ -2,9 +2,11 @@ package com.eureka_server.services.servicemanager;
 
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.eureka_server.services.model.LoginResponse;
 import com.eureka_server.services.model.SessionService;
+import com.eureka_server.services.model.SignupResponse;
 import com.eureka_server.services.model.UserDetails;
 import com.eureka_server.services.repo.SessionServiceRepository;
 import com.eureka_server.services.repo.UserDetailsRepository;
@@ -99,5 +101,29 @@ public class SessionServices {
             System.out.println("Logged out session: " + session.getSessionId());
         }
 		
+	}
+	@Transactional
+	public SignupResponse signUpAttempt(UserDetails userDetails) {
+		SignupResponse signupResponse = new SignupResponse();
+		signupResponse.setUserDetails(userDetails);
+		try {
+			long currentTimeMillis = System.currentTimeMillis();
+	        Timestamp timestamp = new Timestamp(currentTimeMillis);
+				SessionService newUserSession = new SessionService();
+//				newUserSession.setSessionId(UUID.randomUUID());
+//				newUserSession.setUserId(UUID.randomUUID());
+				newUserSession.setUsername(userDetails.getUsername());
+				newUserSession.setPassword(userDetails.getPasswordHashcode());
+				newUserSession.setLoginTime(timestamp);
+				newUserSession.setLastActivityTime(timestamp);
+				newUserSession.setExpirationTime(timestamp);
+				newUserSession.setActive("N");
+				sessionServiceRepository.saveAndFlush(newUserSession);
+				userDetailsRepository.saveAndFlush(userDetails);
+				signupResponse.setSuccessMsg("Success");
+		} catch (Exception e) {
+			signupResponse.setErrorMsg("Db is not Responding");
+		}
+		return signupResponse;
 	}
 }

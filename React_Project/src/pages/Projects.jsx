@@ -42,11 +42,11 @@ const Projects = () => {
         {projects.map((project) => (
           <Grid item xs={12} sm={6} md={4} key={project.projectId}>
             <Card className="p-4 shadow-md rounded-lg">
-              <Typography variant="h6" className="font-bold mb-3">
-                {project.projectName}
+              <Typography variant="h6" className="font-bold mb-3 primary">
+              Project Name : {project.projectName}
               </Typography>
               <Typography variant="body2" color="textSecondary" className="mb-2">
-                {project.projectDescription}
+              Project Description :{project.projectDescription}
               </Typography>
               <Typography variant="body1" color="textPrimary">
                 Total Time: {project.totalTime} hours

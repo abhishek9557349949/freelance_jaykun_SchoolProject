@@ -1,63 +1,160 @@
-import React, { useState, useEffect } from 'react';
-import Main from '../components/Main';
-import './Activities.css';
+import React, { useState, useEffect } from "react";
+import Main from "../components/Main";
+import "./Activities.css";
+import { useNavigate } from "react-router-dom"; // For redirection
 
 const Activities = () => {
-  const storedProjects = localStorage.getItem('projects');
-  const initialProjects = storedProjects
-    ? JSON.parse(storedProjects)
-    : [
-        { projectName: 'Web Development', activities: [] },
-        { projectName: 'Mobile App', activities: [] },
-        { projectName: 'Data Science Project', activities: [] },
-        { projectName: 'DevOps Pipeline', activities: [] },
-      ];
-
-  const [projects, setProjects] = useState(initialProjects);
+  const navigate = useNavigate();
+  const [projects, setProjects] = useState([]);
   const [showPopup, setShowPopup] = useState(false);
-  const [selectedProject, setSelectedProject] = useState('');
-  const [activityName, setActivityName] = useState('');
-  const [activityDescription, setActivityDescription] = useState('');
-  const [challenges, setChallenges] = useState('');
-  const [solution, setSolution] = useState('');
+  const [selectedProject, setSelectedProject] = useState("");
+  const [activityName, setActivityName] = useState("");
+  const [activityDescription, setActivityDescription] = useState("");
+  const [challenges, setChallenges] = useState("");
+  const [solution, setSolution] = useState("");
 
   useEffect(() => {
-    localStorage.setItem('projects', JSON.stringify(projects));
-  }, [projects]);
+    // Fetch data from the API on component mount
+    const fetchActivities = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:8081/api/application/getactivitylist",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ userName: "john_doe" }),
+          }
+        );
 
-  const addActivity = () => {
-    if (selectedProject && activityName && activityDescription && challenges && solution) {
-      const updatedProjects = projects.map((project) => {
-        if (project.projectName === selectedProject) {
-          return {
-            ...project,
-            activities: [
-              ...project.activities,
-              {
-                title: activityName,
-                description: activityDescription,
-                challenges: challenges,
-                solution: solution,
-              },
-            ],
-          };
+        const data = await response.json();
+
+        if (data.successMsg === "Success") {
+          // Transform the response to match the state structure
+          const updatedProjects = data.projectActivityList.reduce(
+            (acc, activity) => {
+              const existingProject = acc.find(
+                (project) => project.projectName === activity.projectName
+              );
+              if (existingProject) {
+                existingProject.activities.push({
+                  title: activity.activityName,
+                  description: activity.activityDescription,
+                  challenges: activity.challengesFaced,
+                  solution: activity.solution,
+                });
+              } else {
+                acc.push({
+                  projectName: activity.projectName,
+                  activities: [
+                    {
+                      title: activity.activityName,
+                      description: activity.activityDescription,
+                      challenges: activity.challengesFaced,
+                      solution: activity.solution,
+                    },
+                  ],
+                });
+              }
+              return acc;
+            },
+            []
+          );
+
+          setProjects(updatedProjects);
+        } else if (data.successMsg === "login") {
+          navigate("/login"); // Redirect to login if required
+        } else if (data.errorMsg) {
+          alert(data.errorMsg); // Show error message
         }
-        return project;
-      });
-      setProjects(updatedProjects);
-      setShowPopup(false);
-      setActivityName('');
-      setActivityDescription('');
-      setChallenges('');
-      setSolution('');
-      setSelectedProject('');
+      } catch (error) {
+        alert("Error fetching activities. Please try again later.");
+      }
+    };
+
+    fetchActivities();
+  }, [navigate]);
+
+  const addActivity = async () => {
+    if (
+      selectedProject &&
+      activityName &&
+      activityDescription &&
+      challenges &&
+      solution
+    ) {
+      const activityPayload = {
+        userName: "john_doe",
+        projectActivity: {
+          projectName: selectedProject,
+          activityName,
+          activityDescription,
+          challengesFaced: challenges,
+          solution,
+        },
+      };
+
+      try {
+        const response = await fetch(
+          "http://localhost:8081/api/application/addactivity",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(activityPayload),
+          }
+        );
+
+        const data = await response.json();
+
+        if (data.successMsg === "Success") {
+          const updatedProjects = projects.map((project) => {
+            if (project.projectName === selectedProject) {
+              return {
+                ...project,
+                activities: [
+                  ...project.activities,
+                  {
+                    title: activityName,
+                    description: activityDescription,
+                    challenges,
+                    solution,
+                  },
+                ],
+              };
+            }
+            return project;
+          });
+
+          setProjects(updatedProjects);
+          setShowPopup(false);
+          setActivityName("");
+          setActivityDescription("");
+          setChallenges("");
+          setSolution("");
+          setSelectedProject("");
+          alert("Activity added successfully!");
+        } else if (data.successMsg === "login") {
+          navigate("/login"); // Redirect to login if required
+        } else if (data.errorMsg) {
+          alert(data.errorMsg); // Display error message
+        }
+      } catch (error) {
+        alert("Error adding activity. Please try again later.");
+      }
+    } else {
+      alert("Please fill out all fields before adding an activity.");
     }
   };
 
   const removeActivity = (projectName, activityIndex) => {
     const updatedProjects = projects.map((project) => {
       if (project.projectName === projectName) {
-        const updatedActivities = project.activities.filter((_, index) => index !== activityIndex);
+        const updatedActivities = project.activities.filter(
+          (_, index) => index !== activityIndex
+        );
         return {
           ...project,
           activities: updatedActivities,
@@ -70,11 +167,11 @@ const Activities = () => {
 
   const closePopup = () => {
     setShowPopup(false);
-    setActivityName('');
-    setActivityDescription('');
-    setChallenges('');
-    setSolution('');
-    setSelectedProject('');
+    setActivityName("");
+    setActivityDescription("");
+    setChallenges("");
+    setSolution("");
+    setSelectedProject("");
   };
 
   return (
@@ -82,7 +179,10 @@ const Activities = () => {
       <div className="activities-container">
         <div className="header">
           <h2>Projects</h2>
-          <button className="add-activity-button" onClick={() => setShowPopup(true)}>
+          <button
+            className="add-activity-button"
+            onClick={() => setShowPopup(true)}
+          >
             + Add Activity
           </button>
         </div>
@@ -94,16 +194,14 @@ const Activities = () => {
               <div className="activities-grid">
                 {project.activities.map((activity, i) => (
                   <div key={i} className="activity-card">
-                    <h4>{activity.title}</h4>
-                    <p>{activity.description}</p>
-                    <p><strong>Challenges Faced:</strong> {activity.challenges}</p>
-                    <p><strong>Solution:</strong> {activity.solution}</p>
-                    <button
-                      className="remove-activity-button"
-                      onClick={() => removeActivity(project.projectName, i)}
-                    >
-                      Remove Activity
-                    </button>
+                    <h4>Activity Name: {activity.title}</h4>
+                    <p>Description: {activity.description}</p>
+                    <p>
+                      <strong>Challenges Faced:</strong> {activity.challenges}
+                    </p>
+                    <p>
+                      <strong>Solution:</strong> {activity.solution}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -115,9 +213,14 @@ const Activities = () => {
       {showPopup && (
         <div className="popup-overlay">
           <div className="popup-box">
-            <span className="close-btn" onClick={closePopup}>&times;</span>
+            <span className="close-btn" onClick={closePopup}>
+              &times;
+            </span>
             <h3>Add Activity</h3>
-            <select value={selectedProject} onChange={(e) => setSelectedProject(e.target.value)}>
+            <select
+              value={selectedProject}
+              onChange={(e) => setSelectedProject(e.target.value)}
+            >
               <option value="">Select Project</option>
               {projects.map((project, index) => (
                 <option key={index} value={project.projectName}>
@@ -147,8 +250,12 @@ const Activities = () => {
               onChange={(e) => setSolution(e.target.value)}
             ></textarea>
             <div className="popup-buttons">
-              <button className="add-button" onClick={addActivity}>Add</button>
-              <button className="cancel-button" onClick={closePopup}>Cancel</button>
+              <button className="add-button" onClick={addActivity}>
+                Add
+              </button>
+              <button className="cancel-button" onClick={closePopup}>
+                Cancel
+              </button>
             </div>
           </div>
         </div>

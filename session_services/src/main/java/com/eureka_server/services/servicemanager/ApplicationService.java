@@ -7,14 +7,18 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.eureka_server.services.model.AddActivityRequest;
+import com.eureka_server.services.model.AddActivityResponse;
 import com.eureka_server.services.model.AddProjectREsponse;
 import com.eureka_server.services.model.AllProjectData;
 import com.eureka_server.services.model.GetProjectDataREsponse;
+import com.eureka_server.services.model.ProjectActivity;
 import com.eureka_server.services.model.ProjectData;
 import com.eureka_server.services.model.ProjectListResponse;
 import com.eureka_server.services.model.Projects;
 import com.eureka_server.services.model.SessionService;
 import com.eureka_server.services.model.TimeDescription;
+import com.eureka_server.services.repo.ProjectActivityRepository;
 import com.eureka_server.services.repo.ProjectsReopsitory;
 import com.eureka_server.services.repo.SessionServiceRepository;
 import com.eureka_server.services.repo.TimeDEscriptionRepository;
@@ -24,11 +28,13 @@ public class ApplicationService {
 	private final SessionServiceRepository sessionServiceRepository;
 	private final ProjectsReopsitory projectsReopsitory;
 	private final TimeDEscriptionRepository timeDEscriptionRepository;
-
-    public ApplicationService(TimeDEscriptionRepository timeDEscriptionRepository, SessionServiceRepository sessionServiceRepository, ProjectsReopsitory projectsReopsitory) {
+	private final ProjectActivityRepository projectActivityRepository;
+	
+    public ApplicationService(ProjectActivityRepository projectActivityRepository, TimeDEscriptionRepository timeDEscriptionRepository, SessionServiceRepository sessionServiceRepository, ProjectsReopsitory projectsReopsitory) {
 		this.sessionServiceRepository = sessionServiceRepository;
 		this.projectsReopsitory = projectsReopsitory;
 		this.timeDEscriptionRepository = timeDEscriptionRepository;
+		this.projectActivityRepository = projectActivityRepository;
     }
 
 	public AddProjectREsponse addProject(AddProjectREsponse project) {
@@ -151,5 +157,64 @@ public class ApplicationService {
 			projectListResponse.setErrorMsg("Db is not Responding");
 		}
 		return projectListResponse;
+	}
+
+	public AddActivityResponse getActivityList(AddActivityRequest project) {
+
+		SessionService sessionService = new SessionService();
+		AddActivityResponse addActivityResponse = new AddActivityResponse();
+		try {
+			long currentTimeMillis = System.currentTimeMillis();
+	        Timestamp timestamp = new Timestamp(currentTimeMillis);
+	        Calendar calendar = Calendar.getInstance();
+	        calendar.setTime(timestamp);
+	        calendar.add(Calendar.MINUTE, 10);
+	        Timestamp expitationTimestamp = new Timestamp(calendar.getTimeInMillis());
+			sessionService = sessionServiceRepository.findByUsername(project.getUserName());
+			if(sessionService != null && "Y".equalsIgnoreCase(sessionService.isActive())) {
+				sessionService.setLastActivityTime(timestamp);
+				sessionService.setExpirationTime(expitationTimestamp);
+				sessionServiceRepository.save(sessionService);
+				
+				List<ProjectActivity> activityList = projectActivityRepository.findAll();
+				addActivityResponse.setProjectActivityList(activityList);
+				addActivityResponse.setSuccessMsg("Success");
+			}else {
+				addActivityResponse.setSuccessMsg("login");;
+			}
+		} catch (Exception e) {
+			addActivityResponse.setErrorMsg("Db is not Responding");
+		}
+		return addActivityResponse;
+	}
+
+	public AddActivityResponse addActivity(AddActivityRequest project) {
+
+
+		SessionService sessionService = new SessionService();
+		AddActivityResponse addActivityResponse = new AddActivityResponse();
+		try {
+			long currentTimeMillis = System.currentTimeMillis();
+	        Timestamp timestamp = new Timestamp(currentTimeMillis);
+	        Calendar calendar = Calendar.getInstance();
+	        calendar.setTime(timestamp);
+	        calendar.add(Calendar.MINUTE, 10);
+	        Timestamp expitationTimestamp = new Timestamp(calendar.getTimeInMillis());
+			sessionService = sessionServiceRepository.findByUsername(project.getUserName());
+			if(sessionService != null && "Y".equalsIgnoreCase(sessionService.isActive())) {
+				sessionService.setLastActivityTime(timestamp);
+				sessionService.setExpirationTime(expitationTimestamp);
+				sessionServiceRepository.save(sessionService);
+				
+				projectActivityRepository.saveAndFlush(project.getProjectActivity());
+				addActivityResponse.setSuccessMsg("Success");
+			}else {
+				addActivityResponse.setSuccessMsg("login");;
+			}
+		} catch (Exception e) {
+			addActivityResponse.setErrorMsg("Db is not Responding");
+		}
+		return addActivityResponse;
+	
 	}
 }
